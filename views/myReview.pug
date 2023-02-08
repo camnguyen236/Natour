@@ -1,0 +1,10 @@
+extends base
+include _reviewCard
+block append head    
+
+block content
+    main.main 
+        .reviews(class=`${reviews.length === 0 ? 'my-reviews' : ''}`)
+            each review in reviews
+                +myReviewCard(review)
+        

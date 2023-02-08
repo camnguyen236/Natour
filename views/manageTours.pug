@@ -1,0 +1,99 @@
+extends base
+block append head    
+
+block content
+    main.main 
+        table.table__manage(border="1", width="100%")
+            caption Manage Tours
+            thead
+                tr
+                    th Name
+                    th Duration
+                    th Max Group Size
+                    th Difficulty
+                    th Price
+                    th Next Date
+                    th Start Location
+                    th Locations
+                    th Guides
+                    th Edit
+                    th Delete
+            tbody
+                each tour in tours
+                    tr
+                        td= tour.name
+                        td= tour.duration
+                        td= tour.maxGroupSize
+                        td= tour.difficulty
+                        td= tour.price
+                        td= tour.startDates[0].date
+                        td= tour.startLocation.address
+                        td 
+                            each location in tour.locations
+                                p #{location.description},
+                        td
+                            each guide in tour.guides
+                                p #{guide.name},
+                        td
+                            svg.heading-box__icon.actions-icon.manage-tour__edit-btn(data-tour-id=`${tour._id}`)
+                                use(xlink:href='/img/icons.svg#icon-edit')
+                            //- button.btn.btn--green.span-all-rows.manage__btn Edit
+                            //- a(href=`/tours/${tour._id}/edit`) Edit
+                        td
+                            svg.heading-box__icon.actions-icon.manage-tour__delete-btn(data-tour-id=`${tour._id}`)
+                                use(xlink:href='/img/icons.svg#icon-trash-2')                            
+                            //- form(action=`/tours/${tour._id}?_method=DELETE`, method="POST")
+                                //- button.btn.btn--green.span-all-rows.manage__btn(type="submit") Delete
+
+    .modal
+        .modal-container
+            .modal-close.cursorsHover
+                svg.heading-box__icon.edit-tour__close-btn.modal-heading-icon
+                    use(xlink:href='/img/icons.svg#icon-x')
+            .modal-header
+                svg.modal-heading-icon.heading-box__icon.manage-tour__delete-btn
+                    use(xlink:href='/img/icons.svg#icon-info')
+                p Tour
+            .modal-body
+                form.form.edit-tour__form
+                    .form__group
+                        label.form__label(for="name") Name
+                        input.form__input.tour-name(type="text", name="name", placeholder="Name", required)
+                    .form__group.ma-bt-md
+                        label.form__label(for="duration") Duration
+                        input.form__input.tour-duration(type="number", name="duration", placeholder="Duration", required)
+                    .form__group.ma-bt-md
+                        label.form__label(for="maxGroupSize") Max Group Size
+                        input.form__input.tour-maxGroupSize(type="number", name="maxGroupSize", placeholder="Max Group Size", required)
+                    .form__group.ma-bt-md
+                        label.form__label(for="difficulty") Difficulty
+                        select.form__input.tour-difficulty(name="difficulty", id="difficulty")
+                            option(value="easy") Easy
+                            option(value="medium") Medium
+                            option(value="difficult") Difficult
+                    .form__group.ma-bt-md
+                        label.form__label(for="price") Price
+                        input.form__input.tour-price(type="number", name="price", placeholder="Price", required)
+                    //- .form__group.ma-bt-md
+                    //-     label.form__label(for="priceDiscount") Price Discount
+                    //-     input.form__input.tour-priceDiscount(type="number", name="priceDiscount", placeholder="Price Discount", required, min="0", default="0")
+                    .form__group.ma-bt-md
+                        label.form__label(for="summary") Summary
+                        textarea.form__input.tour-summary(name="summary") 
+                    .form__group.ma-bt-md
+                        label.form__label(for="description") Description
+                        textarea.form__input.tour-description(name="description")
+                    .form__group.ma-bt-md
+                        label.form__label(for="startDates") Next Date
+                        input.form__input.tour-startDates(type="date", name="startDates", placeholder="Next Date", required)
+                    .form__group.ma-bt-md
+                        label.form__label(for="startLocation") Start Location
+                        input.form__input.tour-startLocation(type="text", name="startLocation", placeholder="Start Location", required)
+                    .form__group.form__photo-upload
+                        img.form__user-photo.tour-imageCover-photo(src=`/img/users/default.jpg`, alt='User photo')
+                        input.form__upload.tour-imageCover-upload(type='file', accept='image/*', id='imageCover', name='imageCover')
+                        label(for='imageCover') Image Cover                  
+
+                    .form__group.right
+                        input.edit-tour__submit-btn(type="submit", value="Save", class="btn btn--green btn--small reviews__submit")
+            .modal-footer

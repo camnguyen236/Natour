@@ -1,0 +1,56 @@
+extends base
+
+block content
+    main.main 
+        .card-container
+            - let count = 0
+            each tour in tours
+                .card
+                    .card__header
+                        .card__picture
+                            .card__picture-overlay &nbsp;
+                            img.card__picture-img(src=`/img/tours/${tour.imageCover}`, alt=`${tour.name} Tour`)
+                        h3.heading-tertirary
+                            span= tour.name
+
+                    .card__details
+                        .card__sub-heading-container
+                            h4.card__sub-heading= `${tour.difficulty} ${tour.duration}-day tour`
+                            //- <i class="fa-light fa-heart"></i>
+                            //- <i class="fa-regular fa-heart"></i>
+                            //- <i class="fa-solid fa-heart"></i>
+                            - const isLike = likeTour.find(like => like === tour._id.toString())
+                            svg.overview-box__icon.heart-icon.icon-heart-fill(data-tour-id=`${tour._id}`, class=`${isLike ? 'heart-icon--active' : ''}`)
+                                use(xlink:href=`/img/icons.svg#icon-heart`)
+                                //- use(xlink:href=`/img/icons.svg#icon-heart-fill`)
+                        p.card__text= tour.summary
+                        .card__data
+                            svg.card__icon
+                                use(xlink:href='/img/icons.svg#icon-map-pin')
+                            span= tour.startLocation.description
+                        .card__data
+                            svg.card__icon
+                                use(xlink:href='/img/icons.svg#icon-calendar')
+                            - const date = tour.startDates[0]
+                            if (startDates) 
+                                date = startDates[count++]
+                            span= tour.startDates[0].date.toLocaleString('en-us', {month: 'long', year: 'numeric'})
+                        .card__data
+                            svg.card__icon
+                                use(xlink:href='/img/icons.svg#icon-flag')
+                            span= `${tour.locations.length} stops`
+                        .card__data
+                            svg.card__icon
+                                use(xlink:href='/img/icons.svg#icon-user')
+                            span= `${tour.maxGroupSize} people`
+
+                    .card__footer
+                        p
+                            span.card__footer-value= `$${tour.price}`
+                            | 
+                            span.card__footer-text per person
+                        p.card__ratings
+                            span.card__footer-value= tour.ratingsAverage
+                            | 
+                            span.card__footer-text= `rating (${tour.ratingsQuantity})`
+                        a.btn.btn--green.btn--small(href=`/tour/${tour.slug}`) Details

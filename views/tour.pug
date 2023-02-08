@@ -1,0 +1,135 @@
+extends base
+include _reviewCard
+//-type="text/javascript" 
+block append head    
+    //- script(src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js') 
+    //- link(href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet')
+    //- script(defer src='/js/mapbox.js')
+    script(src='https://js.stripe.com/v3/')
+
+mixin overviewBox(label , text, icon, id)
+    .overview-box__detail
+        svg.overview-box__icon
+            use(xlink:href=`/img/icons.svg#icon-${icon}`)
+        span.overview-box__label= label 
+        span.overview-box__text= text
+        if (label === 'Next date')
+            input(type="radio", name="date", value=`${id}`, class="overview-box__radio")
+
+block content
+    section.section-header
+        .header__hero
+            .header__hero-overlay &nbsp;
+            img.header__hero-img(src=`/img/tours/${tour.imageCover}`, alt=`${tour.name}`)
+
+        .heading-box
+            h1.heading-primary
+                span= `${tour.name} tour`
+            .heading-box__group
+                .heading-box__detail
+                    svg.heading-box__icon
+                        use(xlink:href='/img/icons.svg#icon-clock')
+                    span.heading-box__text= `${tour.duration} days`
+                .heading-box__detail
+                    svg.heading-box__icon
+                        use(xlink:href='/img/icons.svg#icon-map-pin')
+                    span.heading-box__text= `${tour.startLocation.description}`
+
+    section.section-description
+        .overview-box
+            div
+                .overview-box__group
+                    .card__sub-heading-container
+                        h2.heading-secondary.ma-bt-lg Quick facts
+                        - const isLike = likeTour.find(like => like === tour._id.toString())
+                        svg.overview-box__icon.heart-icon.icon-heart-fill.icon-heart-detail(data-tour-id=`${tour._id}`, class=`${isLike ? 'heart-icon--active' : ''}`)
+                            use(xlink:href=`/img/icons.svg#icon-heart`)
+                            //- use(xlink:href=`/img/icons.svg#icon-heart-fill`)
+
+                    each tourDate in tour.startDates       
+                        - if (tour.maxGroupSize > tourDate.participants)            
+                            - const dateTemp = tourDate.date.toLocaleString('en-us', { month: 'long', year: 'numeric' })
+                            +overviewBox('Next date', dateTemp, 'calendar', tourDate._id)
+                    +overviewBox('Difficulty', tour.difficulty, 'trending-up')
+                    +overviewBox('Participants', `${tour.maxGroupSize} people`, 'user')
+                    +overviewBox('Rating', `${tour.ratingsAverage} / 5`, 'star')
+
+                .overview-box__group
+                    h2.heading-secondary.ma-bt-lg Your tour guides
+
+                    each guide in tour.guides
+                        .overview-box__detail
+                            img.overview-box__img(src=`/img/users/${guide.photo}`, alt=`${guide.name}`)
+
+                            - if (guide.role === 'lead-guide')
+                                span.overview-box__label Lead guide
+                            - if (guide.role === 'guide')
+                                span.overview-box__label Tour guide
+                            span.overview-box__text= guide.name                
+
+        .description-box
+            h2.heading-secondary.ma-bt-lg= `About ${tour.name} tour`
+            - const parapraphs = tour.description.split('\n');
+            each p in parapraphs
+                p.description__text= p
+
+    section.section-pictures
+        each img, i in tour.images
+            .picture-box
+                img.picture-box__img(src=`/img/tours/${img}`, alt=`${tour.name}`, class=`picture-box__img--${i + 1}`)
+
+    section.section-map
+        #map(data-locations=`${JSON.stringify(tour.locations)}`)
+
+    section.section-reviews
+        .reviews
+            each review in tour.reviews
+                +reviewCard(review)
+        if user
+            if isAddedReview
+                //- a.nav__el.nav__el--cta#add-review(href="/addReview") Write a review
+                button.btn.btn-text.btn--white.span-all-rows.add-review-btn#add-review() Write a review
+        //- else if (user.role === 'user'
+        //-     && tour.reviews.filter(review => review.user._id.toString() === user._id.toString()).length === 0)
+        else
+            a.nav__el.nav__el--cta.add-review-btn(href="/login") Log in to write a review
+    
+    section.section-addReview
+        .addReview
+            h2.heading-secondary.ma-bt-lg Add a review
+            form.form#form-review
+                .form__group
+                    label.form__label(for="review") Your review
+                    textarea.form__input.form__input--textarea#review(name="review", placeholder="Write your review here", required)
+                .form__group 
+                    label.form__label(for="rating") Your rating                    
+                    select.form__input.form__input--select#rating(name="rating", required)
+                        option(value="5") 5
+                        option(value="4") 4
+                        option(value="3") 3
+                        option(value="2") 2
+                        option(value="1") 1
+                input(type="hidden", name="tourId", value=`${tour.id}`, id="tourId")
+                .form__group
+                    button.btn.btn--green#submit-review Submit review
+            
+    section.section-cta
+        .cta
+            .cta__img.cta__img--logo
+                img(src='/img/logo-white.png', alt='Natours logo')
+            img.cta__img.cta__img--1(src=`/img/tours/${tour.images[1]}`, alt='Tour picture')
+            img.cta__img.cta__img--2(src=`/img/tours/${tour.images[2]}`, alt='Tour picture')
+            .cta__content
+                h2.heading-secondary What are you waiting for?
+                p.cta__text= `${tour.duration} days. 1 adventure. Infinite memories. Make it yours today!`
+
+                if user
+                    if (!isBooked)
+                        button.btn.btn--green.span-all-rows#book-tour(data-tour-id=`${tour.id}`) Book tour now!
+                        select#selectedDate
+                            each tourDate in tour.startDates
+                                - if (tour.maxGroupSize > tourDate.participants)
+                                    - const dateTemp = tourDate.date.toLocaleString('en-us', { month: 'long', year: 'numeric' })
+                                    option(value=`${tourDate._id}`)= dateTemp
+                else
+                    a.btn.btn--green.span-all-rows(href='/login') Log in to book tour
